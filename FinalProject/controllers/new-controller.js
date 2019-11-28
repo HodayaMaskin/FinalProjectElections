@@ -1,7 +1,7 @@
 ﻿(function () {
     angular.module("ProductApp", [])
     .controller("ProductController", myControllerFunction);
-
+    // ortalnew comment
     myControllerFunction.$inject = ["$scope", "$http"];
 
     function myControllerFunction($scope, $http) {
