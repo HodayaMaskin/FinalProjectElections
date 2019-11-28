@@ -1,0 +1,74 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title></title>
+	<meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>  
+     <!--<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>-->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.9/angular.min.js"></script>
+
+
+    <script src="../controllers/list-for-candidates.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+        <!--<script>
+        var debug = 0;
+
+        $(document).ready(function () {
+            $("#myBtnPerson").click(function () {
+                var data = {};
+                //data.id = data.idData;
+                $('addEmployee').click(function () {
+                    $.ajax({
+                        url: "http://localhost:24731/api/Values",
+                        method: "POST",
+                        dataType: 'json',
+                        data: data
+                        //data: {
+                        //    Id: document.getElementById("Id").value,
+                        //    Name: document.getElementById("Name").valueOf,
+                        //    Gender: document.getElementById("Gender").valueOf
+                        //}
+                    }).then(function (data) {
+                        debug = data;
+                        //$('.greeting-content').append('<b>' + data + '</b>');
+                    });
+                });
+
+            });
+        });
+
+        </script>-->
+
+</head>
+
+<body ng-app="myClassesApp"  >
+    <div ng-controller="myClassesController" id="revList">
+        Try this one
+
+        <section >
+            <add-buttons-button></add-buttons-button>
+            <div id="space-for-buttons"></div>
+        </section>
+
+        <div class="container" style="margin-top:30px">
+            <div ng-repeat="candidate in listCandidate "></div>
+            <div class="row">
+                <div class="col-sm-4">
+                    <div class="card">
+                        <img class="card-img-top" src="../עח נופש.jpg" alt="Card image" style="width:100%">
+                        <div class="card-body">
+                            <h4 class="card-title">John Doe</h4>
+                            <p class="card-text">Some example text some example text. John Doe is an architect and engineer</p>
+                            <button  class="btn btn-primary stretched-link" id="myBtnPerson">See Profile</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

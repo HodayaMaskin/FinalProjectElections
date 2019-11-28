@@ -1,0 +1,233 @@
+﻿<!-- בדף זה צריך להחליט על התחברות והרשמה -->
+<!DOCTYPE html>
+<title></title>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" />
+<!--<script src="script/jquery-1.11.3.min.js"></script>
+<script src="script/jquery.localize.js"></script>-->
+
+<script>
+
+    $(document).ready(function () {
+      
+        $("#revList").click(function () {
+            $("#body").load("list.html");
+            alert("hey");
+
+
+        });
+ 
+    });
+   
+  
+
+</script>
+<html>
+
+<head>
+
+</head>
+
+<body ng-app="mainApp" id="myMain"data-spy="scroll" data-target=".navbar" data-offset="60" style="background-color:#ffffff;">
+    <!--<div ng-controller="myControllerInMain as $ctrl">-->
+   
+        <div class="jumbotron text-right" style="margin-bottom:0;background-color:#285c7e;">
+            <img src="../מצגת1 (3).png" />
+        </div>
+
+        <nav dir="rtl" class="navbar navbar-expand-sm bg-dark navbar-dark" style="background-color:midnightblue;color:#ffffff;" data-spy="affix" id="navbar">
+            <a class="navbar-brand" href="#">דף הבית</a>
+
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#myNavbar">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="myNavbar">
+                <ul class="navbar-nav">
+                    <li>
+                        <a class="nav-link" href="#" id="revList">רשימת מועמדים</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">רישום</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">הצבעה</a>
+                    </li>
+                </ul>
+            </div>
+            <!--<form class="form-inline" action="/action_page.php">
+                <input class="form-control mr-sm-2" type="text" placeholder="Search">
+                <button class="btn btn-success" type="submit">חיפוש</button>
+            </form>-->
+        </nav>
+    <div class="container" style="margin-top:30px">
+        <br />
+        <br />
+
+        <div class="row">
+            <div class="col-lg-2"></div>
+            <div class="col-lg-8 text-center">
+                <h1 style="color:#263c4a;">מערכת בחירות 2020</h1>
+            </div>
+            <div class="col-lg-2"></div>
+        </div>
+        <br />
+        <br />
+        <div ng-show="{{isConnect==false}}" class="container text-center">
+            <button type="button" style="background-color:#263c4a;color:#ffffff;" class="btn btn-lg btn-block" data-toggle="modal" data-target="#myModalEnter">כניסה</button>
+            <br />
+            <button type="button" style="background-color:#263c4a;color:#ffffff;" class="btn btn-lg btn-block" data-toggle="modal" data-target="#myModal">הרשמה</button>
+        </div>
+    </div>
+        <!-- מודל עבור כניסה למערכת -->
+        <!-- The Modal -->
+        <div class="modal fade" id="myModalEnter">
+            <div class="modal-dialog">
+                <div class="modal-content text-right">
+
+                    <!-- Modal Header -->
+                    <div class="modal-header ">
+                        <div class="col-lg-9"></div>
+                        <h4 class="modal-title text-center">כניסה</h4>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+
+                    <!-- Modal body -->
+                    <div class="modal-body">
+                        <form action="/action_page.php">
+                            <div class="form-group">
+                                <label for="usr">תעודת זהות</label>
+                                <input type="text" class="form-control" id="usr" name="username">
+                            </div>
+                            <div class="form-group">
+                                <label for="pwd">סיסמא</label>
+                                <div class="input-group">
+                                    <input type="password" class="form-control" id="pwd" name="password">
+                                    <div class="input-group-addon">
+                                        <a href=""><i class="fa fa-eye-slash" aria-hidden="true"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- <button type="submit" class="btn btn-primary">Submit</button>-->
+                        </form>
+                    </div>
+
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+        <!-- מודל עבור הרשמה למערכת -->
+        <div class="modal fade" id="myModal">
+            <div class="modal-dialog">
+                <div class="modal-content text-center">
+
+                    <!-- Modal Header -->
+                    <div class="modal-header">
+                        <div class="col-lg-9"></div>
+                        <h4 class="modal-title">הרשמה</h4>
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    </div>
+
+                    <!-- Modal body -->
+                    <div class="modal-body">
+                        <form action="/action_page.php">
+                            <div class="form-group">
+                                <label for="usr">Name:</label>
+                                <input type="text" class="form-control" id="usr" name="username">
+                            </div>
+                            <div class="form-group">
+                                <label for="eml">Email address:</label>
+                                <input type="email" class="form-control" id="email" name="email">
+                            </div>
+                            <div class="form-group">
+                                <label for="pwd">Password:</label>
+                                <input type="password" class="form-control" id="pwd" name="password">
+                            </div>
+                           <!-- <button type="submit" class="btn btn-primary">Submit</button>-->
+                        </form>
+                    </div>
+
+                    <!-- Modal footer -->
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+
+</body>
+</html>
+<!--<div  class="modal-demo">
+        <script type="text/ng-template" id="myModalContent.html">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-title">I'm a modal!</h3>
+            </div>
+            <div class="modal-body" id="modal-body">
+                <ul>
+                    <li ng-repeat="item in items">
+                        <a href="#" ng-click="$event.preventDefault(); $ctrl.selected.item = item">{{ item }}</a>
+                    </li>
+                </ul>
+                Selected: <b>{{ $ctrl.selected.item }}</b>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" type="button" ng-click="$ctrl.ok()">OK</button>
+                <button class="btn btn-warning" type="button" ng-click="$ctrl.cancel()">Cancel</button>
+            </div>
+        </script>
+        <script type="text/ng-template" id="stackedModal.html">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-title">The {{name}} modal!</h3>
+            </div>
+            <div class="modal-body" id="modal-body">
+                Having multiple modals open at once is probably bad UX but it's technically possible.
+            </div>
+        </script>
+
+    </div>-->
+<!--<div class="modal fade" modal="{{modal==true}}" ng- id="myModal" role="dialog">
+    <div class="modal-dialog">
+
+         Modal content
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4><span class="glyphicon glyphicon-lock"></span> Tickets</h4>
+            </div>
+            <div class="modal-body">
+                <form role="form">
+                    <div class="form-group">
+                        <label for="psw"><span class="glyphicon glyphicon-shopping-cart"></span> Tickets, $23 per person</label>
+                        <input type="number" class="form-control" id="psw" placeholder="How many?">
+                    </div>
+                    <div class="form-group">
+                        <label for="usrname"><span class="glyphicon glyphicon-user"></span> Send To</label>
+                        <input type="text" class="form-control" id="usrname" placeholder="Enter email">
+                    </div>
+                    <button type="submit" class="btn btn-block">
+                        Pay
+                        <span class="glyphicon glyphicon-ok"></span>
+                    </button>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-danger btn-default pull-left" data-dismiss="modal">
+                    <span class="glyphicon glyphicon-remove"></span> Cancel
+                </button>
+                <p>Need <a href="#">help?</a></p>
+            </div>
+        </div>
+    </div>
+</div>-->

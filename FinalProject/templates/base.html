@@ -1,0 +1,992 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+
+    <title></title>
+    <meta charset="utf-8" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="style/Style.css" />
+
+    <script src="script/jquery-1.11.3.min.js"></script>
+
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css" />
+
+
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="http://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" />
+    <script src="script/jquery.localize.js"></script>
+    <script src="script/General.js"></script>
+    <link href="style/Style.css" rel="stylesheet" />
+
+    <script>
+
+        //שפות
+
+        function changeLang(lang) {
+            debugger;
+            var opts;
+
+            if (lang == "he") {
+                $("body").attr("dir", "rtl");
+                opts = { language: lang, pathPrefix: "lang" };
+            }
+            if (lang == "en")
+            {
+                $("body").attr("dir", "ltr");
+                opts = { language: lang, pathPrefix: "lang" };
+            }
+            if (lang == null) {
+                opts = JSON.parse(localStorage.getItem('lang'));
+            }
+
+            $("[data-localize]").localize("lang", opts)
+            localStorage.setItem('lang', JSON.stringify(opts));
+
+        }
+
+        function getUrlVars() {
+            var vars = [], hash;
+            var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
+            for (var i = 0; i < hashes.length; i++) {
+                hash = hashes[i].split('=');
+                vars.push(hash[0]);
+                vars[hash[0]] = hash[1];
+            }
+            return vars;
+        }
+
+
+        //
+        function SetDisabledWrite() {
+
+            if ($("#Write").is(':checked') && $("#Write").val() == '1') {
+                $("#firstNameWriteNew").attr('disabled', true);
+                $("#lastNameWriteNew").attr('disabled', true);
+                $("#rcn").attr('disabled', true);
+                $("#telphonWriteNew").attr('disabled', true);
+                $("#PasswordWriteNew").attr('disabled', true);
+                $("#emailWriteNew").attr('disabled', true);
+                $("#firstNameWrite").removeAttr('disabled', true);
+                $("#lastNameWrite").removeAttr('disabled', true);
+                $("#PasswordWrite").removeAttr('disabled', true);
+            }
+            else {
+                $("#firstNameWriteNew").removeAttr('disabled', true);
+                $("#lastNameWriteNew").removeAttr('disabled', true);
+                $("#rcn").removeAttr('disabled', true);
+                $("#telphonWriteNew").removeAttr('disabled', true);
+                $("#PasswordWriteNew").removeAttr('disabled', true);
+                $("#emailWriteNew").removeAttr('disabled', true);
+                $("#firstNameWrite").attr('disabled', true);
+                $("#lastNameWrite").attr('disabled', true);
+                $("#PasswordWrite").attr('disabled', true);
+            }
+        }
+
+
+
+        $(document).ready(function () {
+
+            $('.OnlyClear').find('input:text').val('');
+            $('.OnlyClear').find('input:tel').val('');
+            $('.OnlyClear').find('input:password').val(null);
+            $('.OnlyClear').find('input:email').val(null);
+
+            var content = $('#body').load("NewHome.html", function () {
+                changeLang();
+            });
+
+            $('#modelPsw').on('show.bs.modal', function (e) {
+                //get data-id attribute of the clicked element
+                var type = $(e.relatedTarget).data('type');
+                //populate the textbox
+                $(e.currentTarget).find("#btnPsw").data('type', type);
+            });
+
+            var lang = getUrlVars()["lang"];
+            if (lang == "he") {
+            }
+            changeLang(lang);
+
+            $(".btn.lang:first-child").text(lang);
+            $(".btn.lang:first-child").val(lang);
+
+
+            SetDisabledWrite();
+            $('input:radio[name="NameWrite"]').change(
+             function () {
+                 //נבחר סופר קיים
+                 SetDisabledWrite();
+             });
+
+            //רשימת ההסמכתאות לרישום הסופר לאתר
+            $.ajax({
+                url: 'http://localhost:33254/api/Recommend',
+                type: 'GET',
+                dataType: 'json',
+                error: function (jqXHR, textStatus, errorThrown) {
+                    alert(errorThrown);
+                },
+                success: function (json) {
+                    $.each(json, function (index, value) {
+                        $('#recommend').append($("<option value='" + value.NameRecommend + "'>").data('id', value.IdRecommend));
+                    });
+                }
+            });
+
+            //דוחות
+            $("#BtnReport").click(function () {
+
+                var arr = [ $('#firstNameR'), $('#LastNameR')];
+                var Message = [ "שם פרטי סופר קיים אניו תקין", "שם משפחה סופר קיים אינו תקין"];
+
+                //בדיקת תקינות על שם הסופר ושם משפחה
+                $.each(arr, function (y, item) {
+                    if ($.trim(item.val() != '')) {
+                        var char = item.val();
+                        for (var i = 0; i < char.length; i++) {
+                            if (!((item.val().charAt(i).charCodeAt() < 48 || item.val().charAt(i).charCodeAt() > 57))) {
+                                alert(Message[y]);
+                                item.focus();
+                                item.select();
+                                return false;
+                            }
+                        }
+                    }
+                });
+
+
+                $.ajax({
+                    url: 'http://localhost:33254/api/Write',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (data, textStatus, xhr) {
+
+                        var WriteReport = new Object();
+                        WriteReport.pswWrite = $('#PswR').val();
+                        WriteReport.FirstNameSofer = $('#firstNameR').val();
+                        WriteReport.LastNameSofer = $('#LastNameR').val();
+                        var findWrite = false;
+                        $.each(data, function (index, value) {
+                            if (findWrite==false &&
+                                WriteReport.pswWrite == value.pswWrite &&
+                                WriteReport.FirstNameSofer == value.FirstNameSofer &&
+                                WriteReport.LastNameSofer == value.LastNameSofer)
+                            {
+                                findWrite = true;
+                                $("#ModalReport").modal('toggle');
+                                $('#body').html(' ');
+                                var dlg = $('#body').load("Rpt.html?v=2", function (x, y, z) {
+                                    dlg.find("#WriteName").text(value.FirstNameSofer + " " + value.LastNameSofer).data('IdWrite', value.IdWrite);
+                                    changeLang();
+                                });
+
+                            }
+                            else{}
+
+                        });
+                        if (!findWrite) {
+                            alert("לא קיים משתמש בעל נתונים אלו");
+                            return false;
+                        }
+                    }
+                });
+                return false;
+            });
+
+            //סופר
+            $("#BtnWrite").click(function () {
+
+
+
+                var arr = [$('#firstNameWriteNew'), $('#lastNameWriteNew'), $('#firstNameWrite'), $('#lastNameWrite')];
+                var Message = ["שם פרטי סופר חדש אינו תקין", "שם משפחה סופר חדש אינו תקין", "שם פרטי סופר קיים אניו תקין", "שם משפחה סופר קיים אינו תקין"];
+
+
+                //בדיקת תקינות על שם הסופר ושם משפחה
+                $.each(arr, function (y, item) {
+                    if ($.trim(item.val() != '')) {
+                        var char = item.val();
+                        for (var i = 0; i < char.length; i++) {
+                            if (!((item.val().charAt(i).charCodeAt() < 48 || item.val().charAt(i).charCodeAt() > 57))) {
+                                alert(Message[y]);
+                                item.focus();
+                                item.select();
+                                return false;
+                            }
+                        }
+                    }
+                });
+
+
+                //אם קיים הסופר נכנס לעדכון המוצרים
+                //אם סופר חדש ממלא את מוצריו
+                $.ajax({
+                    url: 'http://localhost:33254/api/Write',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (data, textStatus, xhr) {
+
+                        if ($("#Write").is(':checked') && $("#Write").val() == '1') {
+                            var Write = {};
+                            Write.pswWrite = $('#PasswordWrite').val();
+                            Write.FirstNameSofer = $('#firstNameWrite').val();
+                            Write.LastNameSofer = $('#lastNameWrite').val();
+                            var findWrite = false;
+                            var index = -1;
+                            for (i = 0; i < data.length; i++) {
+                                if (Write.pswWrite == data[i].pswWrite
+                                    && Write.FirstNameSofer == data[i].FirstNameSofer
+                                    && Write.LastNameSofer == data[i].LastNameSofer) {
+                                    findWrite = true
+                                    index = i;
+
+
+                                    $("#myModelWrite").modal('toggle');
+                                    $('#body').html(' ');
+                                    var dlg = $('#body').load("Item.html", function (x, y, z) {
+
+                                        dlg.find("#WriterName").text(data[index].FirstNameSofer + " " + data[index].LastNameSofer).data('IdWrite', data[index].IdWrite);
+                                        changeLang();
+                                        loadItems()
+
+                                    });
+
+                                    break;
+                                }
+
+                            };
+                            if (!findWrite) {
+                                alert("לא נמצא במערכת סופר בעל נתונים אלו");
+                                return false;
+                            }
+                        }
+                        else {
+
+                            //בדיקה על שם פרטי
+                            var name=$('#firstNameWriteNew').val();
+                            if ($.trim($('#firstNameWriteNew').val()) == '') {
+                                alert(" !שם פרטי חובה ");
+                                return false;
+                            }
+
+                            //בדיקה על שם משפחה
+                            var name = $('#lastNameWriteNew').val();
+                            if ($.trim($('#lastNameWriteNew').val()) == '') {
+                                alert(" !שם משפחה חובה ");
+                                return false;
+                            }
+
+                            //בדיקת תקינות על הטלפון
+                            var numbers = /^[0-9]+$/;
+                            if ($.trim($('#telphonWriteNew').val()) == '') {
+                                alert("!טלפון חובה ");
+                                return false;
+                            }
+                            if ($.trim($('#telphonWriteNew').val()) != '') {
+                                if ($('#telphonWriteNew').val().match(numbers) == null) {
+                                    alert("מס טלפון אינו תקין");
+                                    $('#telphonWriteNew').focus();
+                                    $('#telphonWriteNew').select();
+                                    return false;
+                                }
+                            }
+
+                            //בדיקת תקינות על המייל
+                            var mailformat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+                            if ($.trim($('#emailWriteNew').val()) == '') {
+                                alert(" !מייל חובה ");
+                                return false;
+                            }
+                            if ($.trim($('#emailWriteNew').val()) != '') {
+                                if ($('#emailWriteNew').val().match(mailformat) == null) {
+                                    alert("מייל לא תקין");
+                                    $('#emailWriteNew').focus();
+                                    $('#emailWriteNew').select();
+                                    $('#emailWriteNew') = ' ';
+                                    return false;
+                                }
+
+                            }
+
+                            //בדיקת תקינות על הסיסמא
+                            if ($.trim($('#PasswordWriteNew').val()) == '') {
+                                alert("סיסמא חובה");
+                                return false;
+                            }
+
+                            var Write = new Object();
+                            var newWrite = $("enterWrite");
+                            Write.FirstNameSofer = $('#firstNameWriteNew').val();
+                            Write.LastNameSofer = $('#lastNameWriteNew').val();
+                            Write.Email = $('#emailWriteNew').val();
+                            Write.Tel = $('#telphonWriteNew').val();
+                            Write.pswWrite = $('#PasswordWriteNew').val();
+                            $("#recommend").find('option').each(function (index, val) {
+                                if ($(val).val() == $('#rcn').val()) {
+                                    Write.IdRecommend = $(val).data('id');
+                                }
+                                if (Write.IdRecommend == '') {
+                                    alert("בחירת הסמכתא חובה!");
+                                    return false;
+                                }
+                            });
+
+                            for (i = 0; i < data.length; i++) {
+                                if (Write.pswWrite==data[i].pswWrite&&
+                                    Write.FirstNameSofer == data[i].FirstNameSofer
+                                    && Write.LastNameSofer == data[i].LastNameSofer) {
+                                    alert("קים כבר משתמש בעל נתונים זהים");
+                                    return false;
+                                }
+                                if (Write.pswWrite == data[i].pswWrite) {
+                                    alert("סיסמא קיימת! החלף סיסמא");
+                                    return false;
+                                }
+                            };
+
+                            $.ajax({
+                                url: 'http://localhost:33254//api/Write',
+                                type: 'POST',
+                                dataType: 'json',
+                                data: Write,
+                                success: function (data, textStatus, xhr) {
+
+
+                                    var Fname = document.getElementById("firstNameWriteNew").value;
+                                    var Lname = document.getElementById("lastNameWriteNew").value;
+                                    var Pname = document.getElementById("PasswordWriteNew").value;
+
+                                    $("#myModelWrite").modal('toggle');
+                                    var dlg = $('#body').load("Item.html", function (x, y, z) {
+                                        debugger;
+                                        dlg.find("#WriterName").text(Fname + " " + Lname).data('IdWrite', data.IdWrite);
+
+                                        changeLang();
+                                        loadItems();
+
+                                    });
+                                    console.log(data);
+                                },
+                                error: function (xhr, textStatus, errorThrown) {
+                                    console.log('Error in Operation');
+                                    alert("שגיאה! אנא נסה מאוחר יותר");
+                                }
+                            });
+
+                        }
+                    }
+                });
+                return false;
+            });// BtnWrite סגירה של
+
+            //דף הבית
+            $("#revHome").click(function () {
+                $('#body').load("NewHome.html", function () {
+                    changeLang();
+                });
+
+            })
+            //מבצעים
+            $("#revRecommen").click(function () {
+                var dlg = $('#body').load("NewSale.html", function () {
+                    loadItemsSale(dlg, true);
+                    changeLang();
+                });
+                return false;
+            });
+            //מכרזים
+            $("#revTender").click(function () {
+                var dlg = $('#body').load("NewTender.html", function () {
+                    loadItems(dlg, true, 0);
+                    changeLang();
+                });
+
+                return false;
+            });
+            //גלריה
+            $("#revGalery").click(function () {
+                $('#body').load("NewGalerya.html", function () {
+                    changeLang();
+                });
+            });
+            //חנות
+            $("#revShop").click(function () {
+                $('#body').load("NewShop.html", function () {
+                    changeLang();
+                });
+                return false;
+            });
+            //אודותינו
+            $("#revList").click(function () {
+                $('#body').load("list.html");
+                });
+            });
+            //רשימת הסופרים
+            $("#revWrite").click(function () {
+                var dlg = $('#body').load("WriteList.html", function () {
+                    loadWrite(dlg, 0);
+                    changeLang();
+                });
+                return false;
+            });
+
+            //תחתית העמוד
+            $(".navbar a, footer a[href='#myPage']").on('click', function (event) {
+
+                if (this.id.indexOf("lang-") < 0) {
+                    // Prevent default anchor click behavior
+                    event.preventDefault();
+                    // Store hash
+                    var hash = this.hash;
+                    // Using jQuery's animate() method to add smooth page scroll
+                    // The optional number (900) specifies the number of milliseconds it takes to scroll to the specified area
+                    $('html, body').animate({
+                        //scrollTop: $(hash).offset().top(),
+                    }, 900, function () {
+
+                        // Add hash (#) to URL when done scrolling (default click behavior)
+                        window.location.hash = hash;
+                    });
+                }
+            });
+
+            $("").click(function () {
+                $(this).tab('show');
+            });
+
+            //אם שכח סיסמא
+            $("#pswd").click(function () {
+                $("#modelPsw").modal();
+            });
+
+            //נפתח מודל שבו הוא צריך להכניס את המייל שלו
+            //המערכת מאמתת את הנתונים ואם מצאה את המייל
+            //שולחת את הסיסמא למייל של הלקוח
+            $("#btnPsw").click(function () {
+
+                //בדיקת תקינות על המייל
+                var mailformat = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
+                if ($.trim($('#myEmail').val()) == '') {
+                    alert(" !מייל חובה ");
+                    return false;
+                }
+                if ($.trim($('#myEmail').val()) != '') {
+                    if ($('#myEmail').val().match(mailformat) == null) {
+                        alert("מייל לא תקין");
+                        $('#myEmail').focus();
+                        $('#myEmail').select();
+                        return false;
+                    }
+                }
+
+
+                $.ajax({
+                    url: 'http://localhost:33254/api/Write',
+                    type: 'GET',
+                    dataType: 'json',
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        alert(errorThrown);
+                    },
+                    success: function (json) {
+                        var findWrite = false;
+
+                        $.each(json, function (index, value) {
+                            if (json[index].Email == $('#myEmail').val()) {
+                                findWrite = true
+                                var SendMail = new Object();
+                                SendMail.To = $('#myEmail').val();
+                                SendMail.Name = $('#myEmail').val();
+                                SendMail.Tel =" סיסמתך: "+ json[index].pswWrite;
+
+                                //שליחת הסיסמא למייל של הסופר
+                                $.ajax({
+                                    url: 'http://localhost:33254/api/SendMail',
+                                    type: 'POST',
+                                    dataType: 'json',
+                                    data: SendMail,
+                                    success: function (json, textStatus, xhr) {
+                                        console.log(json);
+                                        alert(" !סיסמתך נשלחה בהצלחה ");
+                                    },
+                                    error: function (xhr, textStatus, errorThrown) {
+                                        console.log('Error in Operation');
+                                    }
+                                });
+
+                                $('.modal-backdrop').hide();
+                                $("#RemoveModelEmail").click();
+                            }
+                            if (!findWrite) {
+                                alert("לא נמצא במערכת המייל");
+                                return false;
+                            }
+                        });
+                    }
+                    });
+            });
+
+            //התענינות באתר ושליחת מייל
+            $("#sendMail").click(function () {
+
+
+                var arr = [$('#name')];
+                var Message = ["שם אינו תקין"];
+
+                //בדיקת תקינות על שם הסופר ושם משפחה
+                $.each(arr, function (y, item) {
+                    if ($.trim(item.val() != '')) {
+                        var char = item.val();
+                        for (var i = 0; i < char.length; i++) {
+                            if (!((item.val().charAt(i).charCodeAt() < 48 || item.val().charAt(i).charCodeAt() > 57))) {
+                                alert(Message[y]);
+                                item.focus();
+                                item.select();
+                                return false;
+                            }
+                        }
+                    }
+                });
+
+                var name = $('#name').val();
+                if ($.trim($('#name').val()) == '') {
+                    alert(" !שם פרטי או שם משפחה חובה ");
+                    return false;
+                }
+
+                //בדיקת תקינות על הטלפון
+                var numbers = /^[0-9]+$/;
+                if ($.trim($('#phone').val()) == '') {
+                    alert("!טלפון חובה ");
+                    return false;
+                }
+                if ($.trim($('#phone').val()) != '') {
+                    if ($('#phone').val().match(numbers) == null) {
+                        alert("מס טלפון אינו תקין");
+                        $('#phone').focus();
+                        $('#phone').select();
+                        return false;
+                    }
+                }
+
+                var num = $('#phone').val();
+                var numS = num.toString();
+                var SendMail = new Object();
+                SendMail.Name = $('#name').val() +" רוצה ליצור איתך קשר ";
+                SendMail.Tel = " טלפון: " + numS + " הודעה: " + $('#message').val();
+
+
+
+                $.ajax({
+                    url: 'http://localhost:33254/api/SendMail',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: SendMail,
+                    success: function (data, textStatus, xhr) {
+                        console.log(data);
+                        alert(" !הודעתך נשלחה בהצלחה נהיה בקשר ");
+                    },
+                    error: function (xhr, textStatus, errorThrown) {
+                        console.log('Error in Operation');
+                        return false;
+                    }
+                });
+                return false;
+            });
+        });
+
+        var monthNames = [
+         "January", "February", "March",
+         "April", "May", "June", "July",
+         "August", "September", "October",
+         "November", "December"
+        ];
+
+        //מבצעים
+        var loadItemsSale = function (dlg, type) {
+            $.getJSON('http://localhost:33254/api/InformaintionType?sale=' + type, function (data) {
+                var divItems = dlg.find("#itemsSale .row");
+
+                $.each(data, function (index, val) {
+                    var singleItem = $('<div/>').addClass('col-md-3').html(dlg.find("#singleItem").html());
+                    singleItem.appendTo(divItems);
+                    singleItem.find("#product").html(val.Products.NameProducts);
+                    singleItem.find("#writer strong").html(val.Write.FirstNameSofer + " " + val.Write.LastNameSofer);
+                    singleItem.find("img").attr('src', val.ImageUri);
+                    singleItem.find("#price").html(val.Price);
+                    singleItem.find("#count ").html(val.Count);
+                    singleItem.find("#description").html(val.Description);
+                    var date = new Date(val.Date);
+
+                    var day = date.getDate();
+                    var monthIndex = date.getMonth();
+                    var year = date.getFullYear();
+
+
+                    singleItem.find("#date").html(day + " " + monthNames[monthIndex] + " " + year);
+                    singleItem.find("#writeType").html(val.TypeWrite.NameType);
+                    //var Id=val.IdInformaintion;
+                    singleItem.find("#Information").html(val.IdInformation);
+                    singleItem.find("#btnSale").data("IdInformation", val.IdInformation);
+                    singleItem.find("#btnSale").data("WriterData", val.Write);
+                    singleItem.find("#btnSale").data("Products", val.Products);
+                    singleItem.find("#btnSale").click(function (e) {
+                        //get data-id attribute of the clicked element
+                        debugger;
+                        var type = $(e.currentTarget).data('IdInformation')
+                        var Products = $(e.currentTarget).data('Products')
+                        var Write = $(e.currentTarget).data('WriterData')
+                        $(window).data('IdInformation', type);
+                        $(window).data('Products', Products);
+                        $(window).data('WriterData', Write);
+                        //populate the textbox
+
+                    });
+                });
+            });
+        }
+
+        //מכרזים
+        var loadItems = function (dlg, type, num) {
+            var num;
+            $.getJSON('http://localhost:33254/api/InformaintionType?tender=' + type+'&num=' + num, function (data) {
+                var divItems = dlg.find("#items .row");
+
+                $.each(data, function (index, val) {
+                    var singleItemTender = $('<div/>').addClass('col-md-3').html(dlg.find("#singleItem").html());
+                    singleItemTender.appendTo(divItems);
+                    singleItemTender.find("#product").html(val.Products.NameProducts);
+                    singleItemTender.find("#writer strong").html(val.Write.FirstNameSofer + " " + val.Write.LastNameSofer);
+                    singleItemTender.find("img").attr('src', val.ImageUri);
+                    singleItemTender.find("#price").html(val.Price);
+                    var date = new Date(val.Date);
+
+                    var day = date.getDate();
+                    var monthIndex = date.getMonth();
+                    var year = date.getFullYear();
+
+
+                    singleItemTender.find("#date").html(day + " " + monthNames[monthIndex] + " " + year);
+                    singleItemTender.find("#writeType").html(val.TypeWrite.NameType);
+                    //var Id=val.IdInformaintion;
+                    singleItemTender.find("#Information").html(val.IdInformation);
+                    singleItemTender.find("#btnSale").data("IdInformation", val.IdInformation);
+                    singleItemTender.find("#btnSale").click(function (e) {
+                        //get data-id attribute of the clicked element
+                        debugger;
+                        var type = $(e.currentTarget).data('IdInformation')
+                        $(window).data('IdInformation', type);
+                        //populate the textbox
+
+                    });
+                });
+            });
+        }
+
+        //רשימת הסופרים
+        var loadWrite = function (dlg, type) {
+            $.getJSON('http://localhost:33254/api/Write?rcm+' + type, function (data) {
+                var divList = dlg.find("#list .row");
+                debugger;
+                $.each(data, function (index, val) {
+                    var singleWrite = $('<div/>').addClass('col-md-3').html(dlg.find("#singleWrite").html());
+                    singleWrite.appendTo(divList);
+                    singleWrite.find("#writer strong").html(val.FirstNameSofer + " " + val.LastNameSofer);
+                    singleWrite.find("#recommendId").html(val.Recommend.NameRecommend);
+                    singleWrite.find("#description").html(val.Description);
+
+                });
+            });
+
+
+        }
+
+    </script>
+    <style>
+        .font {
+            font-family: 'Guttman Stam';
+            color: #808080;
+        }
+    </style>
+</head>
+<body id="myPage" data-spy="scroll" data-target=".navbar" data-offset="60" style="background-color: #E0E0E0" dir="rtl">
+
+    <!--ניווט הדף-->
+    <nav class="navbar navbar-default navbar-fixed-top" data-spy="affix" data-offset-top="197" id="navbar">
+        <div class="container-fluid">
+            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+                <span class="icon-bar"></span>
+            </button>
+
+
+            <div class="collapse navbar-collapse" id="myNavbar">
+                <ul class="nav navbar-nav navbar-right font">
+                    <li><a href="#" id="revList" style="width: 120px" data-localize="about us">אודותינו</a></li>
+                    <li><a href="#" id="revWrite" style="width: 120px" data-localize="list write">רשימת סופרים </a></li>
+                    <!--<li><a href="#" id="revTender" style="width: 120px" data-localize="tender">מכרזים</a></li>-->
+                    <li><a href="#" id="revRecommen" style="width: 120px" data-localize="sales">מבצעים</a></li>
+                    <li><a href="#" id="revShop" style="width: 120px" data-localize="shop">חנות</a></li>
+                    <li><a href="#" id="revGalery" data-localize="galery" style="width: 120px">גלריה</a></li>
+                    <li class="active"><a href="#" id="revHome" data-localize="home-page" style="width: 120px">דף הבית</a></li>
+                </ul>
+                <div class="navbar-left nav navbar-nav">
+                    <div style="float: left; margin-left: 10px; margin-right: 10px">
+                        <br />
+                        <div class="dropdown lang ">
+
+                            <button class="btn btn-default dropdown-toggle lang" type="button" id="ddLang" data-toggle="dropdown">
+
+                                <span class="caret"></span>
+                            </button>
+
+                            <ul class="dropdown-menu lang font" aria-labelledby="ddLang">
+                                <li><a href="Base.html?lang=en" id="lang-en">en</a></li>
+                                <li><a href="Base.html?lang=he" id="lang-he">עברית</a></li>
+
+
+                            </ul>
+                        </div>
+                    </div>
+
+                    <ul class="nav navbar-nav font">
+                        <li>
+                            <br />
+                            <button class="btn" data-toggle="modal" data-target="#myModelWrite" data-localize="sofer entry">כניסת סופר</button>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!--גוף העמוד-->
+    <div id="body"></div>
+
+
+    <!--bg-ליצירת קשר-->
+    <div class="bg-1">
+        <div class="container-fluid bg-grey font">
+            <div class="row">
+                <div class="col-sm-5 center">
+                    <br />
+                    <img src="image/images%20(4).jpg" class="img-rounded" alt="Cinque Terre" width="354" height="236" />
+                </div>
+                <div class="col-sm-7">
+                    <form method="post" action="demo_form.asp">
+                        <h2 class="text-center" data-localize="contacted" style="color:#E0E0E0;">ליצירת קשר: </h2>
+                        <div class="row">
+                            <div class="col-sm-6 form-group">
+                                &nbsp;<input class="form-control" id="name" name="name" data-localize="firs and last name" placeholder="שם מלא" type="text" required />
+                            </div>
+                            <div class="col-sm-6 form-group">
+                                &nbsp;<input class="form-control" id="phone" name="phone" placeholder="טלפון" data-localize="tel" type="tel" required />
+                            </div>
+                        </div>
+                        <textarea class="form-control" id="message" name="message" placeholder="נושא" data-localize="message to send" rows="5"></textarea>
+                        <br />
+                        <div class="row">
+                            <div class="col-sm-12 form-group">
+                                <button class="btnSend" id="sendMail" data-localize="send">שלח</button>
+                                <!--<button class="btn btn-default pull-right" type="submit">שלח</button>-->
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!--תחתית העמוד-->
+    <footer class="container-fluid text-center font" style="background-color: #808080;">
+        <a href="#myPage" title="To Top">
+            <span class="glyphicon glyphicon-chevron-up"></span>
+        </a>
+        <p data-localize="chagit&elisheva">
+            בנית האתר ועיצובו: חגית פוקס - 0548498229
+            <br />
+            ואלישבע לרדו - 0548433435
+        </p>
+    </footer>
+
+
+    <!-- מודל זה בשביל כניסת סופר -->
+    <div class="modal fade" id="myModelWrite" role="dialog">
+        <div class="modal-dialog">
+
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header" style="padding: 35px 50px;">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 data-localize="sofer entry"><span class="glyphicon glyphicon-lock"></span>כניסת סופר</h4>
+                </div>
+                <div class="modal-body" style="padding: 40px 50px;" id="enterWrite">
+                    <!--<a href="#" id="revNewSofer">רישום סופר</a>-->
+                    <form role="form" action="demo_form.asp">
+                        <!--   <div class="form-group">-->
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        <label>
+                                            <input type="radio" id="Write" name="NameWrite" value="1" />סופר קיים
+                                        </label>
+                                    </th>
+                                    <th>
+                                        <label>
+                                            <input type="radio" name="NameWrite" id="NewWrite" value="2" checked="checked" />סופר חדש
+                                        </label>
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        <label for="usrname" data-localize="first name"><span class="glyphicon glyphicon-user"></span>שם פרטי</label>
+                                        <input type="text" class="form-control" id="firstNameWrite" data-localize="inputF" placeholder="הכנס שם פרטי" required />
+                                    </th>
+                                    <th>
+                                        <label for="usrname" data-localize="first name"><span class="glyphicon glyphicon-user"></span>שם פרטי</label>
+                                        <input type="text" class="form-control" id="firstNameWriteNew" data-localize="inputF" placeholder="הכנס שם פרטי" required />
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        <label for="usrname" data-localize="last name"><span class="glyphicon glyphicon-user"></span>שם משפחה</label>
+                                        <input type="text" class="form-control" id="lastNameWrite" data-localize="inputL" placeholder="הכנס שם משפחה" required />
+                                    </th>
+                                    <th>
+                                        <label for="usrname" data-localize="last name"><span class="glyphicon glyphicon-user"></span>שם משפחה</label>
+                                        <input type="text" class="form-control" id="lastNameWriteNew" data-localize="inputL" placeholder="הכנס שם משפחה" required />
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        <label for="psw" data-localize="pasword"><span class="glyphicon glyphicon-eye-open"></span>סיסמא</label>
+                                        <input type="password" class="form-control" id="PasswordWrite" data-localize="inputP" placeholder="הכנס סיסמא" required />
+                                    </th>
+                                    <th id="recom">
+                                        <label for="recom" data-localize="recommend"><span class="glyphicon glyphicon-list"></span>הסמכתא</label>
+                                        <input list="recommend" data-localize="Select a recommend" id="rcn" placeholder="בחר הסמכתה" required />
+                                        <datalist id="recommend"></datalist>
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th></th>
+                                    <th>
+                                        <label for="telphon" data-localize="tel"><span class="glyphicon glyphicon-phone"></span>מספר טלפון</label>
+                                        <input type="tel" class="form-control" id="telphonWriteNew" data-localize="inputT" placeholder="מספר טלפון" required />
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th></th>
+                                    <th>
+                                        <label for="emaily" data-localize="email"><span class="glyphicon glyphicon-envelope"></span>מייל</label>
+                                        <input type="email" class="form-control" data-localize="inputM" id="emailWriteNew" required />
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th></th>
+                                    <th>
+                                        <label for="psw" data-localize="pasword"><span class="glyphicon glyphicon-eye-open"></span>סיסמא</label>
+                                        <input type="password" class="form-control" id="PasswordWriteNew" data-localize="inputP" placeholder="הכנס סיסמא" required />
+                                    </th>
+                                </tr>
+
+                            </thead>
+                        </table>
+
+                        <button id="BtnWrite" class="btn btn-success btn-block" data-localize="log in"><span class="glyphicon glyphicon-off"></span>התחבר</button>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-danger btn-default pull-left" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span>Cancel</button>
+                    <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-dismiss="modal" data-target="#modelPsw" data-type="w" data-localize="forgot password">?שכחת סיסמא </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- מודל זה בשביל דוחות -->
+    <div class="modal fade" id="ModalReport" role="dialog">
+        <div class="modal-dialog">
+
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header" style="padding: 35px 50px;">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 data-localize="sofer entry"><span class="glyphicon glyphicon-lock"></span>כניסת סופר</h4>
+                </div>
+                <div class="modal-body" style="padding: 40px 50px;">
+                    <!--<a href="#" id="revNewSofer">רישום סופר</a>-->
+                    <form role="form" action="demo_form.asp">
+                        <!--   <div class="form-group">-->
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        <label data-localize="old sofer">
+                                            סופר קיים
+                                        </label>
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        <label for="usrname" data-localize="first name"><span class="glyphicon glyphicon-user"></span>שם פרטי</label>
+                                        <input type="text" class="form-control" id="firstNameR" data-localize="inputF" placeholder="הכנס שם פרטי" required />
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        <label for="usrname" data-localize="last name"><span class="glyphicon glyphicon-user"></span>שם משפחה</label>
+                                        <input type="text" class="form-control" id="LastNameR" data-localize="inputL" placeholder="הכנס שם משפחה" required />
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        <label for="psw" data-localize="pasword"><span class="glyphicon glyphicon-eye-open"></span>סיסמא</label>
+                                        <input type="password" class="form-control" id="PswR" data-localize="inputP" placeholder="הכנס סיסמא" required />
+                                    </th>
+                                </tr>
+                            </thead>
+                        </table>
+
+                        <button id="BtnReport" class="btn btn-success btn-block" data-localize="log in"><span class="glyphicon glyphicon-off"></span>התחבר</button>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" class="btn btn-danger btn-default pull-left" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span>Cancel</button>
+                    <button type="button" class="btn btn-info btn-lg" data-toggle="modal" data-dismiss="modal" data-target="#modelPsw" data-type="w" data-localize="forgot password">?שכחת סיסמא </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!--  שכחת סיסמא -->
+    <div class="modal fade" id="modelPsw" role="dialog">
+        <div class="modal-dialog">
+
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title" data-localize="enter email">הכנס מייל</h4>
+                </div>
+                <div class="modal-body">
+                    <label for="emaily" data-localize="email"><span class="glyphicon glyphicon-envelope"></span>מייל</label>
+                    <input type="email" class="form-control" data-localize="inputM" id="myEmail" required />
+                    <br />
+                    <button id="btnPsw" class="btn btn-success btn-block" data-localize="ok">אישור</button>
+                </div>
+                <div class="modal-footer">
+                    <button type="submit" id="RemoveModelEmail" class="btn btn-danger btn-default pull-left" data-dismiss="modal"><span class="glyphicon glyphicon-remove"></span>Cancel</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>
